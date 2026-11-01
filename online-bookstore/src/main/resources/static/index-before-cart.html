@@ -1,0 +1,681 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookNest | Online Bookstore</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f5f0;
+      color: #252525;
+    }
+
+    header {
+      background: #243b32;
+      color: white;
+      padding: 22px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    header h1 { margin: 0; font-size: 27px; }
+    header p { margin: 5px 0 0; color: #d5e4d8; }
+
+    .hero {
+      padding: 55px 7%;
+      background: linear-gradient(120deg, #dce8d8, #f3e6cf);
+    }
+
+    .hero h2 {
+      font-size: clamp(30px, 5vw, 46px);
+      margin: 0 0 12px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      line-height: 1.6;
+      max-width: 600px;
+    }
+
+    main { padding: 30px 7% 60px; }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+
+    input, select {
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      background: white;
+    }
+
+    input { flex: 1; min-width: 200px; }
+    select { min-width: 180px; }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: bold;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 15px;
+      font-weight: bold;
+      background: #31513c;
+      color: white;
+    }
+
+    button:hover { background: #243b32; }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .status { margin: 15px 0; color: #555; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      box-shadow: 0 3px 14px #0000000d;
+      border: 1px solid #e8e5df;
+      transition: transform .2s, box-shadow .2s;
+      overflow-wrap: anywhere;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 22px #00000012;
+    }
+
+    .book-icon { font-size: 38px; margin-bottom: 12px; }
+
+    .genre {
+      display: inline-block;
+      background: #e7efe5;
+      color: #31513c;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .card h3 { margin: 12px 0 7px; font-size: 18px; }
+    .author { color: #666; font-size: 14px; min-height: 34px; }
+    .price { font-size: 21px; font-weight: bold; margin: 15px 0 8px; }
+    .stock { font-size: 13px; color: #53704e; }
+
+    .panel {
+      margin: 30px 0;
+      padding: 24px;
+      border: 1px solid #e8e5df;
+      border-radius: 12px;
+      background: white;
+      box-shadow: 0 3px 14px #0000000d;
+    }
+
+    .auth-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 25px;
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .auth-form input {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .message {
+      min-height: 24px;
+      margin-top: 15px;
+      line-height: 1.5;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 35px;
+      background: white;
+      text-align: center;
+      border-radius: 10px;
+    }
+
+    [hidden] { display: none !important; }
+
+    footer {
+      padding: 25px;
+      text-align: center;
+      background: #243b32;
+      color: white;
+    }
+
+    @media (max-width: 520px) {
+      .hero { padding: 35px 6%; }
+      main { padding: 25px 6% 45px; }
+      .panel { padding: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>📚 BookNest</h1>
+      <p>Your next favorite book is waiting.</p>
+    </div>
+    <strong>ONLINE BOOKSTORE</strong>
+  </header>
+
+  <section class="hero">
+    <h2>Stories for every kind of reader.</h2>
+    <p>
+      Explore technology, fiction, fantasy, mystery, romance, science
+      and more—all in one place.
+    </p>
+  </section>
+
+  <main>
+    <h2>Explore our collection</h2>
+
+    <div class="filters">
+      <input
+        id="search"
+        type="search"
+        placeholder="Search by book title..."
+        aria-label="Search books by title"
+      >
+
+      <select id="genre" aria-label="Filter by genre">
+        <option value="">All genres</option>
+      </select>
+    </div>
+
+    <p id="status" class="status" role="status">Loading books...</p>
+    <section id="books" class="grid"></section>
+
+    <section class="panel" id="account-panel">
+      <h2>👤 Customer Account</h2>
+      <p>Create an account or log in to view your orders.</p>
+
+      <div class="auth-grid">
+        <form id="register-form" class="auth-form">
+          <h3>Create an account</h3>
+
+          <label for="register-email">Email address</label>
+          <input
+            id="register-email"
+            type="email"
+            autocomplete="email"
+            maxlength="150"
+            placeholder="you@example.com"
+            required
+          >
+
+          <label for="register-password">Password</label>
+          <input
+            id="register-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            placeholder="At least 8 characters"
+            required
+          >
+
+          <button type="submit">Register</button>
+        </form>
+
+        <form id="login-form" class="auth-form">
+          <h3>Log in</h3>
+
+          <label for="login-email">Email address</label>
+          <input
+            id="login-email"
+            type="email"
+            autocomplete="username"
+            maxlength="150"
+            placeholder="you@example.com"
+            required
+          >
+
+          <label for="login-password">Password</label>
+          <input
+            id="login-password"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+
+          <button type="submit">Log In</button>
+        </form>
+      </div>
+
+      <p id="auth-message" class="message" role="status" aria-live="polite"></p>
+
+      <button id="logout-button" type="button" hidden>Log Out</button>
+    </section>
+
+    <section class="panel" id="my-orders">
+      <h2>📦 My Orders</h2>
+      <p>Log in to view orders associated with your account.</p>
+      <button id="orders-button" type="button">View My Orders</button>
+      <p id="orders-message" class="message" role="status" aria-live="polite"></p>
+      <div id="orders-list" class="grid"></div>
+    </section>
+  </main>
+
+  <footer>BookNest · Discover your next great read</footer>
+
+  <script>
+    "use strict";
+
+    const booksContainer = document.getElementById("books");
+    const searchInput = document.getElementById("search");
+    const genreSelect = document.getElementById("genre");
+    const statusText = document.getElementById("status");
+
+    const registerForm = document.getElementById("register-form");
+    const loginForm = document.getElementById("login-form");
+    const logoutButton = document.getElementById("logout-button");
+    const authMessage = document.getElementById("auth-message");
+
+    const ordersButton = document.getElementById("orders-button");
+    const ordersMessage = document.getElementById("orders-message");
+    const ordersList = document.getElementById("orders-list");
+
+    let allBooks = [];
+    let csrfToken = null;
+    let loggedIn = false;
+
+    function readCookie(name) {
+      const prefix = name + "=";
+      const entry = document.cookie
+        .split("; ")
+        .find(item => item.startsWith(prefix));
+
+      return entry
+        ? decodeURIComponent(entry.substring(prefix.length))
+        : null;
+    }
+
+    async function refreshCsrfToken() {
+      // The backend endpoint must return the CSRF token as JSON:
+      // { "token": "..." }
+      const response = await fetch("/api/auth/csrf", {
+        method: "GET",
+        credentials: "same-origin",
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not initialize security token. Check the backend.");
+      }
+
+      const data = await response.json();
+      csrfToken = data.token || readCookie("XSRF-TOKEN");
+
+      if (!csrfToken) {
+        throw new Error("Security token is missing. Check CSRF configuration.");
+      }
+
+      return csrfToken;
+    }
+
+    async function securePost(url, body) {
+      if (!csrfToken) {
+        await refreshCsrfToken();
+      }
+
+      let response = await fetch(url, {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-XSRF-TOKEN": csrfToken
+        },
+        body: JSON.stringify(body || {})
+      });
+
+      // A successful login/logout may rotate or clear security tokens.
+      // Refresh once and retry only if the server explicitly returns 403.
+      if (response.status === 403) {
+        await refreshCsrfToken();
+
+        response = await fetch(url, {
+          method: "POST",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+            "X-XSRF-TOKEN": csrfToken
+          },
+          body: JSON.stringify(body || {})
+        });
+      }
+
+      return response;
+    }
+
+    async function responseData(response) {
+      const text = await response.text();
+
+      if (!text) return {};
+
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { error: text };
+      }
+    }
+
+    async function loadBooks() {
+      try {
+        const response = await fetch("/api/books", {
+          credentials: "same-origin"
+        });
+
+        if (!response.ok) {
+          throw new Error("Could not load books.");
+        }
+
+        allBooks = await response.json();
+
+        const genres = [
+          ...new Set(allBooks.map(book => book.genre).filter(Boolean))
+        ].sort();
+
+        genreSelect.replaceChildren();
+
+        const allOption = document.createElement("option");
+        allOption.value = "";
+        allOption.textContent = "All genres";
+        genreSelect.appendChild(allOption);
+
+        genres.forEach(genre => {
+          const option = document.createElement("option");
+          option.value = genre;
+          option.textContent = genre;
+          genreSelect.appendChild(option);
+        });
+
+        displayBooks(allBooks);
+      } catch (error) {
+        statusText.textContent =
+          "Unable to load books. Check that Spring Boot is running.";
+        booksContainer.replaceChildren();
+      }
+    }
+
+    function displayBooks(books) {
+      booksContainer.replaceChildren();
+
+      statusText.textContent =
+        `${books.length} book${books.length === 1 ? "" : "s"} found`;
+
+      if (books.length === 0) {
+        const message = document.createElement("div");
+        message.className = "empty";
+        message.textContent = "No books found. Try another search.";
+        booksContainer.appendChild(message);
+        return;
+      }
+
+      books.forEach(book => {
+        const card = document.createElement("article");
+        card.className = "card";
+
+        const icon = document.createElement("div");
+        icon.className = "book-icon";
+        icon.textContent = "📖";
+
+        const badge = document.createElement("span");
+        badge.className = "genre";
+        badge.textContent = book.genre || "General";
+
+        const title = document.createElement("h3");
+        title.textContent = book.title || "Untitled";
+
+        const author = document.createElement("p");
+        author.className = "author";
+        author.textContent = "by " + (book.author || "Unknown author");
+
+        const price = document.createElement("p");
+        price.className = "price";
+        price.textContent = "₹" + Number(book.price || 0).toFixed(2);
+
+        const stock = document.createElement("p");
+        stock.className = "stock";
+        stock.textContent = `Available stock: ${book.stock ?? 0}`;
+
+        card.append(icon, badge, title, author, price, stock);
+        booksContainer.appendChild(card);
+      });
+    }
+
+    function filterBooks() {
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedGenre = genreSelect.value;
+
+      const filtered = allBooks.filter(book =>
+        String(book.title || "").toLowerCase().includes(query) &&
+        (!selectedGenre || book.genre === selectedGenre)
+      );
+
+      displayBooks(filtered);
+    }
+
+    function setLoggedIn(value) {
+      loggedIn = value;
+      logoutButton.hidden = !value;
+      loginForm.hidden = value;
+      registerForm.hidden = value;
+
+      if (value) {
+        authMessage.textContent = "You are logged in.";
+      }
+    }
+
+    registerForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      authMessage.textContent = "Creating your account...";
+
+      const email = document.getElementById("register-email").value.trim();
+      const password = document.getElementById("register-password").value;
+
+      try {
+        const response = await securePost("/api/auth/register", {
+          email,
+          password
+        });
+
+        const data = await responseData(response);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Registration failed.");
+        }
+
+        authMessage.textContent =
+          "Registration successful. Please log in with your new account.";
+
+        document.getElementById("login-email").value = email;
+        document.getElementById("login-password").value = "";
+        document.getElementById("register-password").value = "";
+      } catch (error) {
+        authMessage.textContent = error.message || "Registration failed.";
+      }
+    });
+
+    loginForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      authMessage.textContent = "Logging in...";
+
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value;
+
+      try {
+        const response = await securePost("/api/auth/login", {
+          email,
+          password
+        });
+
+        const data = await responseData(response);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Login failed.");
+        }
+
+        setLoggedIn(true);
+        document.getElementById("login-password").value = "";
+
+        // Fetch a fresh CSRF token after authentication.
+        csrfToken = null;
+        await refreshCsrfToken();
+
+        authMessage.textContent = "Login successful. You can now view your orders.";
+        await loadMyOrders();
+      } catch (error) {
+        setLoggedIn(false);
+        authMessage.textContent = error.message || "Login failed.";
+      }
+    });
+
+    logoutButton.addEventListener("click", async () => {
+      authMessage.textContent = "Logging out...";
+
+      try {
+        const response = await securePost("/api/auth/logout", {});
+        const data = await responseData(response);
+
+        if (!response.ok) {
+          throw new Error(data.error || "Logout failed.");
+        }
+
+        setLoggedIn(false);
+        csrfToken = null;
+        ordersList.replaceChildren();
+        ordersMessage.textContent = "You have been logged out.";
+
+        await refreshCsrfToken();
+        authMessage.textContent = "Logged out successfully.";
+      } catch (error) {
+        authMessage.textContent = error.message || "Logout failed.";
+      }
+    });
+
+    async function loadMyOrders() {
+      ordersMessage.textContent = "";
+      ordersList.replaceChildren();
+
+      if (!loggedIn) {
+        ordersMessage.textContent = "Please log in before viewing your orders.";
+        document.getElementById("account-panel").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+        return;
+      }
+
+      ordersMessage.textContent = "Loading your orders...";
+
+      try {
+        const response = await fetch("/api/orders", {
+          method: "GET",
+          credentials: "same-origin",
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+
+        const orders = await responseData(response);
+
+        if (response.status === 401 || response.status === 403) {
+          setLoggedIn(false);
+          throw new Error("Your session has expired. Please log in again.");
+        }
+
+        if (!response.ok) {
+          throw new Error(orders.error || "Could not load your orders.");
+        }
+
+        if (!Array.isArray(orders) || orders.length === 0) {
+          ordersMessage.textContent =
+            "No orders were found for your account.";
+          return;
+        }
+
+        ordersMessage.textContent = `Found ${orders.length} order(s).`;
+
+        orders.forEach(order => {
+          const card = document.createElement("article");
+          card.className = "card";
+
+          const heading = document.createElement("h3");
+          heading.textContent = `Order #${order.orderId ?? order.id ?? "N/A"}`;
+
+          const date = document.createElement("p");
+          date.textContent = "Date: " + (
+            order.orderDate
+              ? new Date(order.orderDate).toLocaleString()
+              : "Not available"
+          );
+
+          const amount = document.createElement("p");
+          amount.textContent =
+            "Total: ₹" + Number(order.totalAmount || 0).toFixed(2);
+
+          const status = document.createElement("p");
+          status.textContent = "Status: " + (order.status || "Unknown");
+
+          card.append(heading, date, amount, status);
+          ordersList.appendChild(card);
+        });
+      } catch (error) {
+        ordersMessage.textContent =
+          error.message || "Could not load your orders.";
+      }
+    }
+
+    ordersButton.addEventListener("click", loadMyOrders);
+
+    searchInput.addEventListener("input", filterBooks);
+    genreSelect.addEventListener("change", filterBooks);
+
+    loadBooks();
+
+    // Initialize the CSRF token. Authentication remains unavailable
+    // until the backend provides the /api/auth/csrf endpoint.
+    refreshCsrfToken().catch(error => {
+      authMessage.textContent =
+        error.message +
+        " Authentication will work after the backend endpoint is configured.";
+    });
+  </script>
+</body>
+</html>
+

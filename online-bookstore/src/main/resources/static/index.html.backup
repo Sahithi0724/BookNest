@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookNest | Online Bookstore</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f5f0;
+      color: #252525;
+    }
+    header {
+      background: #243b32;
+      color: white;
+      padding: 22px 7%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    header h1 { margin: 0; font-size: 27px; }
+    header p { margin: 5px 0 0; color: #d5e4d8; }
+    .hero {
+      padding: 55px 7%;
+      background: linear-gradient(120deg, #dce8d8, #f3e6cf);
+    }
+    .hero h2 { font-size: clamp(30px, 5vw, 46px); margin: 0 0 12px; }
+    .hero p { font-size: 17px; line-height: 1.6; max-width: 600px; }
+    main { padding: 30px 7% 60px; }
+    .filters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+    input, select {
+      padding: 13px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      background: white;
+    }
+    input { flex: 1; min-width: 200px; }
+    select { min-width: 180px; }
+    .status { margin: 15px 0; color: #555; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      box-shadow: 0 3px 14px #0000000d;
+      border: 1px solid #e8e5df;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 22px #00000012;
+    }
+    .book-icon { font-size: 38px; margin-bottom: 12px; }
+    .genre {
+      display: inline-block;
+      background: #e7efe5;
+      color: #31513c;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    .card h3 { margin: 12px 0 7px; font-size: 18px; }
+    .author { color: #666; font-size: 14px; min-height: 34px; }
+    .price { font-size: 21px; font-weight: bold; margin: 15px 0 8px; }
+    .stock { font-size: 13px; color: #53704e; }
+    .empty {
+      grid-column: 1 / -1;
+      padding: 35px;
+      background: white;
+      text-align: center;
+      border-radius: 10px;
+    }
+    footer {
+      padding: 25px;
+      text-align: center;
+      background: #243b32;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>📚 BookNest</h1>
+      <p>Your next favorite book is waiting.</p>
+    </div>
+    <strong>ONLINE BOOKSTORE</strong>
+  </header>
+  <section class="hero">
+    <h2>Stories for every kind of reader.</h2>
+    <p>
+      Explore technology, fiction, fantasy, mystery, romance, science
+      and more—all in one place.
+    </p>
+  </section>
+  <main>
+    <h2>Explore our collection</h2>
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search by book title...">
+      <select id="genre">
+        <option value="">All genres</option>
+      </select>
+    </div>
+    <p id="status" class="status">Loading books...</p>
+    <section id="books" class="grid"></section>
+  </main>
+  <footer>BookNest · Discover your next great read</footer>
+  <script>
+    const booksContainer = document.getElementById("books");
+    const searchInput = document.getElementById("search");
+    const genreSelect = document.getElementById("genre");
+    const statusText = document.getElementById("status");
+    let allBooks = [];
+    async function loadBooks() {
+      try {
+        const response = await fetch("/api/books");
+        if (!response.ok) throw new Error("Could not load books");
+        allBooks = await response.json();
+        const genres = [...new Set(
+          allBooks.map(book => book.genre).filter(Boolean)
+        )].sort();
+        genres.forEach(genre => {
+          const option = document.createElement("option");
+          option.value = genre;
+          option.textContent = genre;
+          genreSelect.appendChild(option);
+        });
+        displayBooks(allBooks);
+      } catch (error) {
+        statusText.textContent =
+          "Unable to load books. Check that Spring Boot is running.";
+        booksContainer.replaceChildren();
+      }
+    }
+    function displayBooks(books) {
+      booksContainer.replaceChildren();
+      statusText.textContent =
+        `${books.length} book${books.length === 1 ? "" : "s"} found`;
+      if (books.length === 0) {
+        const message = document.createElement("div");
+        message.className = "empty";
+        message.textContent = "No books found. Try another search.";
+        booksContainer.appendChild(message);
+        return;
+      }
+      books.forEach(book => {
+        const card = document.createElement("article");
+        card.className = "card";
+        const icon = document.createElement("div");
+        icon.className = "book-icon";
+        icon.textContent = "📖";
+        const badge = document.createElement("span");
+        badge.className = "genre";
+        badge.textContent = book.genre || "General";
+        const title = document.createElement("h3");
+        title.textContent = book.title;
+        const author = document.createElement("p");
+        author.className = "author";
+        author.textContent = "by " + book.author;
+        const price = document.createElement("p");
+        price.className = "price";
+        price.textContent = "₹" + Number(book.price).toFixed(2);
+        const stock = document.createElement("p");
+        stock.className = "stock";
+        stock.textContent = `Available stock: ${book.stock}`;
+        card.append(icon, badge, title, author, price, stock);
+        booksContainer.appendChild(card);
+      });
+    }
+    function filterBooks() {
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedGenre = genreSelect.value;
+      const filtered = allBooks.filter(book =>
+        book.title.toLowerCase().includes(query) &&
+        (!selectedGenre || book.genre === selectedGenre)
+      );
+      displayBooks(filtered);
+    }
+    searchInput.addEventListener("input", filterBooks);
+    genreSelect.addEventListener("change", filterBooks);
+    loadBooks();
+  </script>
+</body>
+</html>
